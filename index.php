@@ -58,6 +58,7 @@
 <div class="group 1">
 	<div class="section 1">
 		<div class="article 1">
+			<h3 contenteditable="true">Article 1</h3>
 			<p contenteditable="true">All of these paragraphs are editable – click on them and start typing!</p>
 			<p contenteditable="true"><?php echo($theText); ?></p>
 		</div>
