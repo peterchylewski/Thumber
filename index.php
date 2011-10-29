@@ -56,7 +56,9 @@
 
 <body>
 <div class="group 1">
+	<h3>Group 1</h3>
 	<div class="section 1">
+		<h3>Section 1</h3>
 		<div class="article 1">
 			<h3 contenteditable="true">Article 1</h3>
 			<p contenteditable="true">All of these paragraphs are editable – click on them and start typing!</p>
