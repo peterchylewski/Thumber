@@ -23,8 +23,8 @@
 			width:1em;
 		}
 		
-		P{
-			width:33em;
+		P, H3{
+			width:30em;
 		}
 		
 		.article{
