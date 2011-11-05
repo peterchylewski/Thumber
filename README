@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> 2e74663c9629d5b68ca152ffa167113d97d1eac3
-This is going to be a dummy mockup of the document management system. I plan on starting with HTML and CSS, then adding some JQuery to the mix, then some PHP maybe, etc. This is play space to imagine how things will work and look and what the thing will do.
++Thumber is a lightweight and easy to use thumbnail image creation tool written in PHP.
