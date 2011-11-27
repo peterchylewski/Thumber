@@ -6,7 +6,7 @@ date_default_timezone_set('Europe/Berlin');
 // define paths *
 // --------------------------------------------------------------------------
 
-define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : '../tmp/caches/thumbs/');
+define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : 'thumbs/');
 define('PATH_TO_LOGS',   '');
 
 // --------------------------------------------------------------------------
