@@ -1,1 +1,15 @@
+# Thumber.php
+
 Thumber is a lightweight and easy to use thumbnail image creation tool written in PHP.
+
+## Installation
+
+Make sure there is a 'thumbs' directory on your server, and that it has the proper permissions (chmod 777 thumbs).
+
+## Usage examples
+
+In your HTML code, you can ask Thumber to generate an image at the appropriate size and it will return the URL of that image.
+
+<img src="thumber.php?img=images/myphoto.jpg&w=540">
+
+This will generate a athumbnail at the appropriate size, and store it in the /thumbs folder.
