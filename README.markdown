@@ -120,3 +120,34 @@ This will return files named as:
 
 Note that thumber.php also adds the image dimensions to the file name, this is so that the script can generate multiple thumbs of a given image at different sizes and cache them in the thumbs folder.
 
+
+
+
+- - - - - - - - - -
+
+history:
+
+0.5.4 
+- much faster image output via fpasstru instead of a redirect
+
+0.5.5 
+- parameters 'w' and 'h' - if both set - define a 'box' - the output of distorted images is no longer possible
+- substituted an '_' with an 'x' in the thumb filename that makes more sense, e.g. 'cross_red_10x10.png' instead of 'cross_red_10_10.png'
+- added alpha channel support for pngs and gifs
+
+0.5.6
+- cleaned up the code, improved comments
+- force the creation of a new thumbnail if the creation date of the cached one is older than the orginal’s modification date
+- better error handling
+
+to to:
+- cache purging
+- implement / finalize proper error handling
+- auto detect presence of an alpha channel in the image
+
+nice to have (maybe)
+- 'hot linking' of original files (through CURL or so)
+
+adrien suggestions:
+- width&height, crop, and box parameters for constraining size.
+- check if the area function is working properly (or maybe i'm just bad a math).
