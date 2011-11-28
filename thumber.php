@@ -46,6 +46,8 @@ $thumber = new Thumber();
 *
 * please drop me a note if you like it, have comments/suggestions/wishes,
 * found a bug, or just to say hello.
+* 
+* https://github.com/pepper69/Thumber
 *
 * @copyright	Copyright (c) 2008, 2009, 2010, 2011 Peter Chylewski
 *               released under the gnu license v3 <http://www.gnu.org/licenses/gpl.html>
