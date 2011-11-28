@@ -7,6 +7,7 @@ date_default_timezone_set('Europe/Berlin');
 // --------------------------------------------------------------------------
 
 define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : 'thumbs/');
+define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : './thumbs/');
 define('PATH_TO_LOGS',   '');
 
 define('CUSTOM_PREFIX', 'YourName-websitedotcom'); // custom prefix for your file names (replace with '' for none).
