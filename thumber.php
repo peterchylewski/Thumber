@@ -65,7 +65,7 @@ $thumber = new Thumber();
 * - cleaned up the code, improved comments
 * - force the creation of a new thumbnail if the creation date of the cached one is older
 *   than the orginal’s modification date
-* - better error handling
+* - better error handling*
 *
 * to to:
 * - cache purging
