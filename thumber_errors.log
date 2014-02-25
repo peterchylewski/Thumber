@@ -1,2 +1,0 @@
-[25-Feb-2014 12:51:08 UTC] PHP Notice:  ob_end_clean(): failed to delete buffer. No buffer to delete in /Library/WebServer/www/Thumber/thumber.php on line 368
-[25-Feb-2014 12:51:21 UTC] PHP Notice:  ob_end_clean(): failed to delete buffer. No buffer to delete in /Library/WebServer/www/Thumber/thumber.php on line 368

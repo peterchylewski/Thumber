@@ -17,18 +17,18 @@ define('PATH_TO_LOGS', './');
 // connection (usually faster)
 // --------------------------------------------------------------------------
 
-define('USE_STREAM_CONNECTION', false);
+define('USE_STREAM_CONNECTION', true);
 
 // --------------------------------------------------------------------------
 // activate error handling
 // --------------------------------------------------------------------------
 
 ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('error_log', 'thumber_errors.log');
 ini_set('log_errors', 1);
 function myErrorHandler($errno, $errstr, $errfile, $errline) {
-	Thumber::error($errstr);
+	Thumber::error('line ' . $errline . ': ' . $errstr);
 	return true;
 }
 set_error_handler('myErrorHandler');
@@ -55,7 +55,7 @@ $thumber = new Thumber();
 * please drop me a note if you like it, have comments/suggestions/wishes,
 * found a bug, or just to say hello.
 *
-* @copyright	Copyright (c) 2008, 2009, 2010, 2011, 2012 Peter Chylewski
+* @copyright	Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Peter Chylewski
 *               released under the gnu license v3 <http://www.gnu.org/licenses/gpl.html>
 * @author	    Peter Chylewski <peter@boring.ch>
 * @version	    0.5.7
@@ -83,7 +83,7 @@ $thumber = new Thumber();
 * - new 'sq' parameter to produce square thumbnails
 * - new optional 'sharpen' parameter allows to switch off sharpening for individual thumbnails (default is 'true')
 *
-* to to:
+* to do:
 * - cache purging
 * - implement / finalize proper error handling
 * - auto detect presence of an alpha channel in the image
@@ -122,6 +122,10 @@ protected function _logic() {
 	if (!file_exists($this->pathToImage)) {
 		self::error('input image not found  at "'. $this->pathToImage . '"');
 	}
+	
+	if (is_dir(PATH_TO_THUMBS) !== true) { mkdir(PATH_TO_THUMBS, 0777); }
+	
+	self::log($this->pathToImage);
 		
 	$this->thumbArea   = isset($_GET['a'])  ? $_GET['a']  : null;
 	$this->thumbWidth  = isset($_GET['w'])  ? $_GET['w']  : null;
@@ -137,7 +141,7 @@ protected function _logic() {
 }
 
 protected function _gatherInfo() {
-	
+		
 	// --------------------------------------------------------------------------
 	// determine the file type and the dimensions of the original image
 	// --------------------------------------------------------------------------
@@ -168,7 +172,7 @@ protected function _gatherInfo() {
 	$this->imageWidth  = $info[0];
 	$this->imageHeight = $info[1];
 	$this->imageType   = $types[$info[2]];
-	
+
 }
 
 protected function _calculateThumbDimensions() {
@@ -254,7 +258,7 @@ protected function _serveThumb() {
 	// otherwise generate one
 	// --------------------------------------------------------------------------
 	
-	$this->_generateThumb(); return; // force the generation of a new thumbnail (for testing)
+	#$this->_generateThumb(); return; // force the generation of a new thumbnail (for testing)
 	
 	if (file_exists($this->pathToThumb)) {
 				
@@ -265,6 +269,8 @@ protected function _serveThumb() {
 		
 		if (USE_STREAM_CONNECTION === true) {
 			
+			//self::log('streaming...');
+			
 			// new, much faster
 
 			// open the file in binary mode
@@ -274,10 +280,10 @@ protected function _serveThumb() {
 			header('Content-Type: image/' . $this->imageType == 'jpg' ? 'jpeg' : $this->imageType);
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . filesize($this->pathToThumb));
-			header('Cache-Control: ');          // leave blank to avoid IE errors
-			header('Pragma: ');                 // leave blank to avoid IE errors
-			header('Server: Snark');            // hide environment information if possible
-			header('X-Powered-By: Thumber');    // hide environment information if possible
+			header('Cache-Control: ');          	// leave blank to avoid IE errors
+			header('Pragma: ');                 	// leave blank to avoid IE errors
+			header('Server: NoneOfYourBusiness');   // hide environment information if possible
+			header('X-Powered-By: Thumber');    	// hide environment information if possible
 			header('Content-Disposition: inline; filename="'. urlencode(basename($this->pathToThumb)) . '"');
 
 			// stream it through
@@ -402,16 +408,19 @@ protected function _generateThumb() {
 		
 	switch($this->imageType) {
 		case 'jpg':
+			// save it first
 			imagejpeg($thumbImage, $this->pathToThumb, 80);
 			header('Content-type: image/jpeg'); 
 			imagejpeg($thumbImage, NULL, 80);	
 		break;
 		case 'gif':
+			// save it first
 			imagegif($thumbImage, $this->pathToThumb);
 			header('Content-type: image/gif'); 
 			imagegif($thumbImage, NULL);
 		break;
 		case 'png':
+			// save it first
 			imagepng($thumbImage, $this->pathToThumb);
 			header('Content-type: image/png');
 			imagepng($thumbImage, NULL);
