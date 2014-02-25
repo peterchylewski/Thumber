@@ -78,7 +78,7 @@ protected $square;
 protected $sharpen;
 
 public function __construct() {
-	$this->startTime = microtime(true);
+	// $this->startTime = microtime(true); // for performance testing - not in use right now
 	$this->_logic();
 }
 
@@ -88,21 +88,19 @@ protected function _logic() {
 	// what this program is supposed to do
 	// --------------------------------------------------------------------------
 		
-	$this->pathToImage = isset($_GET['img']) ? $_GET['img'] : '';
-	if (!file_exists($this->pathToImage)) {
+	$this->pathToImage = isset($_GET['img'] === true) ? $_GET['img'] : '';
+	if (file_exists($this->pathToImage) !== true) {
 		self::error('input image not found  at "'. $this->pathToImage . '"');
 	}
 	
 	if (is_dir(PATH_TO_THUMBS) !== true) { mkdir(PATH_TO_THUMBS, 0777); }
+			
+	$this->thumbArea   = isset($_GET['a'] === true)  	  ? $_GET['a']  : null;
+	$this->thumbWidth  = isset($_GET['w'] === true)  	  ? $_GET['w']  : null;
+	$this->thumbHeight = isset($_GET['h'] === true)  	  ? $_GET['h']  : null;
+	$this->square      = isset($_GET['sq'] === true) 	  ? $_GET['sq'] : null;
 	
-	self::log($this->pathToImage);
-		
-	$this->thumbArea   = isset($_GET['a'])  ? $_GET['a']  : null;
-	$this->thumbWidth  = isset($_GET['w'])  ? $_GET['w']  : null;
-	$this->thumbHeight = isset($_GET['h'])  ? $_GET['h']  : null;
-	$this->square      = isset($_GET['sq']) ? $_GET['sq'] : null;
-	
-	$this->sharpen     = isset($_GET['sharpen']) ? $_GET['sharpen'] : 2;
+	$this->sharpen     = isset($_GET['sharpen'] === true) ? $_GET['sharpen'] : 2;
 
 	$this->_gatherInfo();
 	$this->_calculateThumbDimensions();
@@ -147,12 +145,12 @@ protected function _gatherInfo() {
 
 protected function _calculateThumbDimensions() {
 	
-	if (isset($this->square)) {
+	if (isset($this->square) === true) {
 		
 		$this->thumbWidth = $this->square;
 		$this->thumbHeight = $this->square;
 		
-	} else if (isset($this->thumbArea)) {
+	} else if (isset($this->thumbArea) === true) {
 		
 		// --------------------------------------------------------------------------
 		// if the 'a' (for area) parameter has been set, calculate the thumb 
@@ -166,7 +164,7 @@ protected function _calculateThumbDimensions() {
 		$this->thumbWidth  = ceil($this->thumbArea / $this->imageHeight);
 		$this->thumbHeight = ceil($this->thumbArea / $this->imageWidth);
 	
-	} else if (isset($this->thumbWidth) && isset($this->thumbHeight)) {
+	} else if (isset($this->thumbWidth) === true && isset($this->thumbHeight) === true) {
 
 		// --------------------------------------------------------------------------
 		// if both the width and the height have been given, calculate a bounding box
@@ -187,7 +185,7 @@ protected function _calculateThumbDimensions() {
 		// if the height has not been given, calculate it from the width
 		// --------------------------------------------------------------------------
 		
-		if (!isset($this->thumbWidth)) {
+		if (!isset($this->thumbWidth) === true) {
 			$sizeRatio = $this->imageHeight / $this->thumbHeight;
 			$this->thumbWidth = ceil($this->imageWidth / $sizeRatio);
 		} else if (!isset($this->thumbHeight)) {
@@ -230,7 +228,7 @@ protected function _serveThumb() {
 	
 	#$this->_generateThumb(); return; // force the generation of a new thumbnail (for testing)
 	
-	if (file_exists($this->pathToThumb)) {
+	if (file_exists($this->pathToThumb) === true) {
 				
 		// force the creation of a new thumbnail if the modification date of the cached one is older than the orginal’s	
 		if (filemtime($this->pathToImage) > filemtime($this->pathToThumb)) {
@@ -269,7 +267,7 @@ protected function _serveThumb() {
 		}
 				
 	} else {
-		if (file_exists($this->pathToImage)) {
+		if (file_exists($this->pathToImage) === true) {
 			$this->_generateThumb();
 		}
 	}
@@ -303,7 +301,7 @@ protected function _generateThumb() {
 	// create empty thumbnail image
 	$thumbImage = @ImageCreateTrueColor($this->thumbWidth, $this->thumbHeight);
 	
-	// preserve alpha channel
+	// preserve alpha channel if one exists
 	if ($this->imageType == 'png' || $this->imageType == 'gif') {
 		imagealphablending($thumbImage, false);
 	}

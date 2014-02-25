@@ -73,14 +73,15 @@ The thumbnail images are aptly named: The calculated dimensions are added to the
 - path to thumbnail cache directory selectable through  GET parameter
 - cache directory purging through GET parameter
 - define JPEG output quality parameter through GET parameter
+- detect alpha channel in the original image
 - implement / finalize proper error handling
 - cropping (?)
 
 ##Thumber in the wild
 
-http://www.marietaillefer.fr/
+[www.marietaillefer.fr](http://www.marietaillefer.fr/)
 
-http://www.myriamtirler.com/
+[www.myriamtirler.com](http://www.myriamtirler.com/)
 
 Have fun!
 
