@@ -5,7 +5,7 @@
 
 ##How to install and use Thumber
 
-- Download the latest version [http://code.google.com/p/phpthumbmaker/downloads/list here].
+- Download the latest version [https://github.com/peterchylewski/Thumber/tree/v-0.5.7 here].
 
 - Upload it to your web server (PHP 5, GD library required).
 
@@ -49,28 +49,21 @@ The thumbnail images are aptly named: The calculated dimensions are added to the
 ###New in version 0.5.4
 
 - cleaned up code
-
 - much faster caching (no more bad re-directing, but swift streaming through the connection)
-
 - 'area mode' added
-
 - added slight sharpening (thumbnails now appear about as 'sharp' as the input image)
 
 ###New in version 0.5.6
 
 - forces the creation of a new thumbnail if the creation date of the cached one is older than the orginal’s modification date (sort of experimental - please report errors or simply comment it out)
-
 - added alpha channel support for PNGs and GIFs (no sharpening there because it creates ugly borders)
-
 - parameters 'w' and 'h' - if both set - define a 'box' into which the thumbnail fits; the output of distorted images is no longer possible
-
 - substituted an underscore with an 'x' in the thumbnail filename for better readability, e.g. 'example_160x257.png' instead of 'example_160_257.png'
-
 - better error handling
-
 - cleaned up the code, improved comments
 
 ###New in version 0.5.7
+
 - better log function
 - USE_STREAM_CONNECTION option
 - new 'sq' parameter to produce square thumbnails
