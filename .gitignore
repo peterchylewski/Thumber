@@ -1,2 +1,5 @@
-**/_thumbs/*
+**/_thumbs/*.jpg
+**/_thumbs/*.jpeg
+**/_thumbs/*.png
+**/_thumbs/*.gif
 **.log
