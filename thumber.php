@@ -2,19 +2,29 @@
 
 date_default_timezone_set('Europe/Berlin');
 
+define('CR', PHP_EOL);
+define('TAB', chr(9));
+
 // --------------------------------------------------------------------------
 // define paths
 // --------------------------------------------------------------------------
 
-define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : '../tmp/caches/thumbs/');
-define('PATH_TO_LOGS',   '');
+define('PATH_TO_THUMBS', isset($_GET['path_to_thumbs']) ? $_GET['path_to_thumbs'] : './_thumbs/');
+define('PATH_TO_LOGS', './');
+
+// --------------------------------------------------------------------------
+// define whether the thumbnail should be streamed through the open php
+// connection (usually faster)
+// --------------------------------------------------------------------------
+
+define('USE_STREAM_CONNECTION', false);
 
 // --------------------------------------------------------------------------
 // activate error handling
 // --------------------------------------------------------------------------
 
 ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 ini_set('error_log', 'thumber_errors.log');
 ini_set('log_errors', 1);
 function myErrorHandler($errno, $errstr, $errfile, $errline) {
@@ -45,10 +55,10 @@ $thumber = new Thumber();
 * please drop me a note if you like it, have comments/suggestions/wishes,
 * found a bug, or just to say hello.
 *
-* @copyright	Copyright (c) 2008, 2009, 2010, 2011 Peter Chylewski
+* @copyright	Copyright (c) 2008, 2009, 2010, 2011, 2012 Peter Chylewski
 *               released under the gnu license v3 <http://www.gnu.org/licenses/gpl.html>
 * @author	    Peter Chylewski <peter@boring.ch>
-* @version	    0.5.6
+* @version	    0.5.7
 *
 * history:
 *
@@ -65,7 +75,13 @@ $thumber = new Thumber();
 * - cleaned up the code, improved comments
 * - force the creation of a new thumbnail if the creation date of the cached one is older
 *   than the orginal’s modification date
-* - better error handling*
+* - better error handling
+*
+* 0.5.7
+* - better log function
+* - USE_STREAM_CONNECTION option
+* - new 'sq' parameter to produce square thumbnails
+* - new optional 'sharpen' parameter allows to switch off sharpening for individual thumbnails (default is 'true')
 *
 * to to:
 * - cache purging
@@ -80,18 +96,23 @@ $thumber = new Thumber();
 
 class Thumber {
 
-private $pathToImage, $pathToThumb;
-private $imageType;
+protected $startTime;
+protected $pathToImage, $pathToThumb;
+protected $imageType;
 
-private $imageWidth, $imageHeight;
-private $thumbArea;
-private $thumbWidth, $thumbHeight;
+protected $imageWidth, $imageHeight;
+protected $thumbArea;
+protected $thumbWidth, $thumbHeight;
+protected $square;
 
-function __construct() {
+protected $sharpen;
+
+public function __construct() {
+	$this->startTime = microtime(true);
 	$this->_logic();
 }
 
-private function _logic() {
+protected function _logic() {
 	
 	// --------------------------------------------------------------------------
 	// what this program is supposed to do
@@ -99,20 +120,23 @@ private function _logic() {
 		
 	$this->pathToImage = isset($_GET['img']) ? $_GET['img'] : '';
 	if (!file_exists($this->pathToImage)) {
-		self::error('input image not found  at '. $this->pathToImage, E_USER_ERROR);
+		self::error('input image not found  at "'. $this->pathToImage . '"');
 	}
 		
-	$this->thumbArea   = isset($_GET['a']) ? $_GET['a'] : null ;
-	$this->thumbWidth  = isset($_GET['w']) ? $_GET['w'] : null ;
-	$this->thumbHeight = isset($_GET['h']) ? $_GET['h'] : null ;
+	$this->thumbArea   = isset($_GET['a'])  ? $_GET['a']  : null;
+	$this->thumbWidth  = isset($_GET['w'])  ? $_GET['w']  : null;
+	$this->thumbHeight = isset($_GET['h'])  ? $_GET['h']  : null;
+	$this->square      = isset($_GET['sq']) ? $_GET['sq'] : null;
 	
+	$this->sharpen     = isset($_GET['sharpen']) ? $_GET['sharpen'] : 2;
+
 	$this->_gatherInfo();
 	$this->_calculateThumbDimensions();
 	$this->_serveThumb();
 	
 }
 
-private function _gatherInfo() {
+protected function _gatherInfo() {
 	
 	// --------------------------------------------------------------------------
 	// determine the file type and the dimensions of the original image
@@ -147,9 +171,14 @@ private function _gatherInfo() {
 	
 }
 
-private function _calculateThumbDimensions() {
-			
-	if (isset($this->thumbArea)) {
+protected function _calculateThumbDimensions() {
+	
+	if (isset($this->square)) {
+		
+		$this->thumbWidth = $this->square;
+		$this->thumbHeight = $this->square;
+		
+	} else if (isset($this->thumbArea)) {
 		
 		// --------------------------------------------------------------------------
 		// if the 'a' (for area) parameter has been set, calculate the thumb 
@@ -193,9 +222,9 @@ private function _calculateThumbDimensions() {
 		}
 		
 	}
-	
+		
 	// --------------------------------------------------------------------------
-	// make sure the thumbnail isn’t bigger than the original image (disputable)
+	// make sure the thumbnail isn’t bigger than the original image (debatable)
 	// --------------------------------------------------------------------------
 	
 	if ($this->thumbWidth > $this->imageWidth || $this->thumbHeight > $this->imageHeight) {
@@ -218,68 +247,66 @@ private function _calculateThumbDimensions() {
 					
 }
 
-private function _serveThumb() {
+protected function _serveThumb() {
 	
 	// --------------------------------------------------------------------------
 	// if the thumbnail image already exists, serve it; 
 	// otherwise generate one
 	// --------------------------------------------------------------------------
 	
-	#$this->_generateThumb(); return; // force the generation of a new thumbnail (for testing)
+	$this->_generateThumb(); return; // force the generation of a new thumbnail (for testing)
 	
 	if (file_exists($this->pathToThumb)) {
 				
-		// force the creation of a new thumbnail if the modification date of the cached one is older than the orginal’s
-		
+		// force the creation of a new thumbnail if the modification date of the cached one is older than the orginal’s	
 		if (filemtime($this->pathToImage) > filemtime($this->pathToThumb)) {
 			$this->_generateThumb(); return;
 		}
 		
-		// --------------------------------------------------------------------------
-		// old, slow
-		//
-		// $uri = 'http://' . $_SERVER['SERVER_NAME'] . rtrim(dirname($_SERVER['PHP_SELF']), '/') . ltrim($this->pathToThumb, '.');
-		// header('Content-Type: image/' . ($this->imageType == 'jpg' ? 'jpeg' : $this->imageType)); 
-		// header('Content-Length: ' . filesize($this->pathToThumb));
-		// header('Location: ' .  $uri);
-		// exit;
-		// --------------------------------------------------------------------------
-		
-		// --------------------------------------------------------------------------
-		// new, much faster
-		
-		// open the file in binary mode
-		$fp = fopen($this->pathToThumb, 'rb');
-		
-		// send the right headers
-		header('Content-Type: image/' . ($this->imageType == 'jpg' ? 'jpeg' : $this->imageType));
-		header('Content-Transfer-Encoding: binary');
-		header('Content-Length: ' . filesize($this->pathToThumb));
-		header('Cache-Control: ');			// leave blank to avoid IE errors
-		header('Pragma: ');					// leave blank to avoid IE errors
-		header('Server: Snark');			// hide environment information
-		header('X-Powered-By: Thumber'); 	// hide environment information
-		header('Content-Disposition: inline; filename="' . urlencode(basename($this->pathToThumb)) . '"');
-		
-		// stream it through
-		fpassthru($fp);
-		fclose($fp);
-		exit;	
+		if (USE_STREAM_CONNECTION === true) {
 			
+			// new, much faster
+
+			// open the file in binary mode
+			$fp = fopen($this->pathToThumb, 'rb');
+
+			// send the right headers
+			header('Content-Type: image/' . $this->imageType == 'jpg' ? 'jpeg' : $this->imageType);
+			header('Content-Transfer-Encoding: binary');
+			header('Content-Length: ' . filesize($this->pathToThumb));
+			header('Cache-Control: ');          // leave blank to avoid IE errors
+			header('Pragma: ');                 // leave blank to avoid IE errors
+			header('Server: Snark');            // hide environment information if possible
+			header('X-Powered-By: Thumber');    // hide environment information if possible
+			header('Content-Disposition: inline; filename="'. urlencode(basename($this->pathToThumb)) . '"');
+
+			// stream it through
+			fpassthru($fp);
+			fclose($fp);
+		
+		} else {
+			
+			// old, slow (maybe not so slow after all...)
+			
+			$uri = 'http://' . $_SERVER['SERVER_NAME'] . rtrim(dirname($_SERVER['PHP_SELF']), '/') . ltrim($this->pathToThumb, '.');
+			header('Location: ' .  $uri);
+		}
+				
 	} else {
 		if (file_exists($this->pathToImage)) {
 			$this->_generateThumb();
 		}
 	}
 	
+	exit;
 }
 
-private function _generateThumb() {
+protected function _generateThumb() {
 	
 	// --------------------------------------------------------------------------
 	// create an image from the input image file
 	// --------------------------------------------------------------------------
-
+		
 	switch($this->imageType) {
 		case 'jpg':
 			$image = @imagecreatefromjpeg($this->pathToImage);
@@ -293,47 +320,81 @@ private function _generateThumb() {
 	}
 		
 	if ($image === false) {
-		trigger_error('image could not be created', 1024);
-		print 'nöööööö'; exit;
+		self::log('    ' . $this->pathToImage . ': ERROR: image could not be created');
+		exit;
 	}
 		
-	// --------------------------------------------------------------------------
-	// create the thumbnail image and paste the original into it in its new
-	// dimensions
-	// --------------------------------------------------------------------------
-	
+	// create empty thumbnail image
 	$thumbImage = @ImageCreateTrueColor($this->thumbWidth, $this->thumbHeight);
 	
+	// preserve alpha channel
 	if ($this->imageType == 'png' || $this->imageType == 'gif') {
 		imagealphablending($thumbImage, false);
 	}
-
-	// copy image and paste it into the thumb image
-	ImageCopyResampled($thumbImage, $image, 0, 0, 0, 0, $this->thumbWidth, $this->thumbHeight, $this->imageWidth, $this->imageHeight);
-
-	if ($this->imageType == 'png' || $this->imageType == 'gif') {
 		
-		ImageSaveAlpha($thumbImage, true);
-		
-		// we don’t sharpen thumbs that might contain alpha channels, because it produces nasty borders
-		// to do: detect alpha channel in the original image
-		
-	} else {
-
-		// --------------------------------------------------------------------------
-		// sharpen it a little
-		// --------------------------------------------------------------------------
-
-		if (function_exists('imageconvolution')) {
-			$sharpen = array(array( -1, -1, -1 ),
-				             array( -1, 34, -1 ),
-				             array( -1, -1, -1 )
-			);
-			$divisor = array_sum(array_map('array_sum', $sharpen));
-			imageconvolution($thumbImage, $sharpen, $divisor, 0);
+	$srcX = 0;
+	$srcY = 0;
+	
+	$destX = 0;
+	$destY = 0;
+	
+	$srcW = $this->imageWidth;
+	$srcH = $this->imageHeight;
+	
+	$destW = $this->thumbWidth;
+	$destH = $this->thumbHeight;
+	
+	if (isset($this->square)) {		
+		// enlarge thumb contents slightly to cut off possible frame borders
+		$destW = $this->square * 1.1;
+		$destH = $this->square * 1.1;
+		$ratio = $this->imageHeight / $this->imageWidth;		
+		if ($srcW > $srcH) {
+			$destW /= $ratio;
+		} else {
+			$destH *= $ratio;
 		}
-
+		// center pixels
+		$destX = floor(($destW - $this->square) / -2);
+		$destY = floor(($destH - $this->square) / -2);			
 	}
+	
+	// paste the original into the thumb in its new dimensions
+	ImageCopyResampled($thumbImage, $image, $destX, $destY, $srcX, $srcY, $destW, $destH, $srcW, $srcH);
+	 	
+	switch ($this->imageType) {
+		case 'png':
+		case 'gif':
+			
+			ImageSaveAlpha($thumbImage, true);
+
+			// we don’t sharpen thumbs that might contain alpha channels, because it produces nasty borders
+			// - to do: detect alpha channel in the original image
+			
+		break;	
+		default:
+				
+			// --------------------------------------------------------------------------
+			// sharpen it a little
+			// --------------------------------------------------------------------------
+			
+			if ($this->sharpen > 0) {
+				// these are just arbitrary numbers, chosen for simplicity's sake
+				// feel free to experiment!
+				$centerValues = array(1 => 25, 2 => 17, 3 => 12);
+				if (function_exists('imageconvolution')) {
+					$sharpen = array(array( -1, -1, -1 ),
+						             array( -1, $centerValues[$this->sharpen], -1 ),
+						             array( -1, -1, -1 )
+					);
+					$divisor = array_sum(array_map('array_sum', $sharpen));
+					imageconvolution($thumbImage, $sharpen, $divisor, 0);
+				}
+			}
+
+		break;
+	}
+
 
 	// --------------------------------------------------------------------------
 	// spit it out
@@ -361,15 +422,20 @@ private function _generateThumb() {
 	imagedestroy($thumbImage);
 	
 	exit;
-	
+		
 }
 
 public static function error($msg) {
-	ob_end_clean();
-	die($msg);
+	#ob_end_clean();
+	self::log('ERROR: ' . $msg);
+	exit;
+}
+
+public static function log($text) {
+	$pathToLog = PATH_TO_LOGS . 'thumber.log';
+	@chmod($pathToLog, 0777);
+	file_put_contents($pathToLog, @date('Y-m-d\TH:i:s') . TAB . $text . CR,  FILE_APPEND | LOCK_EX);
 }
 
 } // class Thumber
 
-
-?>
