@@ -442,7 +442,7 @@ public static function error($msg) {
 
 public static function log($text) {
 	$pathToLog = PATH_TO_LOGS . 'thumber.log';
-	@chmod($pathToLog, 0777);
+	@chmod(PATH_TO_LOGS, 0777);
 	file_put_contents($pathToLog, @date('Y-m-d\TH:i:s') . TAB . $text . CR,  FILE_APPEND | LOCK_EX);
 }
 
