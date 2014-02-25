@@ -5,27 +5,25 @@
 
 ##How to install and use Thumber
 
-- Download the latest version [https://github.com/peterchylewski/Thumber/tree/v-0.5.7 here].
-
+- Download the latest version here.
 - Upload it to your web server (PHP 5, GD library required).
-
-- Create a directory for the thumbnails cache (see below).
+- Create a directory for the thumbnails cache (see below under "Caching").
 
 ##Usage
 
 To generate a thumbnail image, simply type a URL like this into your browser:
 
-`http://yourserver.org/thumber.php?img=images/abc.png&h=200`
+	http://yourserver.org/thumber.php?img=images/abc.png&h=200
 
-Thumber has four parameters:
+Thumber has five parameters:
 
-- **img**: the path to the original image
+- **img** (required): the path to the original image 
 - **w**: the desired width of the thumbnail image
 - **h**: the desired height of the thumbnail image
 - **a**: the desired area of the thumbnail image
 - **sq**: the desired side length of a square thumbnail image*
  
-*image will be centered
+*image will be downscaled and centered
 
 You can either specify the width (w), the height (h), or both. If you omit one value, it will automatically be calculated for you.
 
@@ -36,7 +34,7 @@ Alternatetively, you can specify the desired area of the thumbnail: use e.g. 'a=
 
 Thumber stores each freshly created thumbnail image file in a directory - the default path to it being ./_thumbs/', but you can easily change it within the code:
 
-`define('PATH_TO_THUMBS', './thumbs/');`
+	`define('PATH_TO_THUMBS', './thumbs/');`
 
 Quite obviously, this directory needs to be writeable.
 
@@ -44,7 +42,7 @@ The next time you call (or anybody else calls) thumber.php, it will automagicall
 
 The thumbnail images are aptly named: The calculated dimensions are added to the original’s file name, e. g. if the original is named 'house.jpg', the thumbnail image will be e.g. named 'house_255x100.jpg', reflecting its size in pixels.
 
-*Note:* ~~Once you've replaced an original image with another one of the same name, you'll have to manually delete the cached thumbnail as well, otherwise you'll be stuck with an old, wrong thumbnail - future releases might add this functionality from within PHP. ~~  (see: 'New in version 0.5.6')
+*Note:* Once you've replaced an original image with another one of the same name, you'll have to manually delete the cached thumbnail as well, otherwise you'll be stuck with an old, wrong thumbnail - future releases might add this functionality from within PHP.  (see: 'New in version 0.5.6')
 
 ###New in version 0.5.4
 
