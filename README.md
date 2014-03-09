@@ -34,7 +34,7 @@ Alternatetively, you can specify the desired area of the thumbnail: use e.g. 'a=
 
 Thumber stores each freshly created thumbnail image file in a directory - the default path to it being ./_thumbs/', but you can easily change it within the code:
 
-	`define('PATH_TO_THUMBS', './thumbs/');`
+	define('PATH_TO_THUMBS', './thumbs/');
 
 Quite obviously, this directory needs to be writeable.
 
@@ -42,40 +42,8 @@ The next time you call (or anybody else calls) thumber.php, it will automagicall
 
 The thumbnail images are aptly named: The calculated dimensions are added to the original’s file name, e. g. if the original is named 'house.jpg', the thumbnail image will be e.g. named 'house_255x100.jpg', reflecting its size in pixels.
 
-*Note:* Once you've replaced an original image with another one of the same name, you'll have to manually delete the cached thumbnail as well, otherwise you'll be stuck with an old, wrong thumbnail - future releases might add this functionality from within PHP.  (see: 'New in version 0.5.6')
+*Note:* Once you've replaced an original image with another one of the same name, you'll have to manually delete the cached thumbnail as well, otherwise you'll be stuck with an old, wrong thumbnail - future releases might add this functionality from within PHP.  (see history/version 0.5.6)
 
-###New in version 0.5.4
-
-- cleaned up code
-- much faster caching (no more bad re-directing, but swift streaming through the connection)
-- 'area mode' added
-- added slight sharpening (thumbnails now appear about as 'sharp' as the input image)
-
-###New in version 0.5.6
-
-- forces the creation of a new thumbnail if the creation date of the cached one is older than the orginal’s modification date (sort of experimental - please report errors or simply comment it out)
-- added alpha channel support for PNGs and GIFs (no sharpening there because it creates ugly borders)
-- parameters 'w' and 'h' - if both set - define a 'box' into which the thumbnail fits; the output of distorted images is no longer possible
-- substituted an underscore with an 'x' in the thumbnail filename for better readability, e.g. 'example_160x257.png' instead of 'example_160_257.png'
-- better error handling
-- cleaned up the code, improved comments
-
-###New in version 0.5.7
-
-- better log function
-- USE_STREAM_CONNECTION option
-- new 'sq' parameter to produce square thumbnails
-- new optional 'sharpen' parameter allows to switch off sharpening for individual thumbnails (default is 'true')
-
-
-###To do
-
-- path to thumbnail cache directory selectable through  GET parameter
-- cache directory purging through GET parameter
-- define JPEG output quality parameter through GET parameter
-- detect alpha channel in the original image
-- implement / finalize proper error handling
-- cropping (?)
 
 ##Thumber in the wild
 
@@ -91,31 +59,42 @@ Peter Chylewski
 
 #Version History
 
-##0.5.4 
+##0.5.4
+
 - much faster caching (no more bad re-directing, but swift streaming via fpasstru)
 - added slight sharpening (thumbnails now appear about as 'sharp' as the input image)
 - 'area mode' added
 - cleaned up code
 
-##0.5.5 
+##0.5.5
+
 - parameters 'w' and 'h' - if both set - define a 'box' - the output of distorted images is no longer possible
 - substituted an '_' with an 'x' in the thumb filename that makes more sense, e.g. 'cross_red_10x10.png' instead of 'cross_red_10_10.png'
 - added alpha channel support for pngs and gifs (no sharpening there because it creates ugly borders)
 
 ##0.5.6
-- force the creation of a new thumbnail if the creation date of the cached one is older than the orginal’s modification date
+
+- forces the creation of a new thumbnail if the creation date of the cached one is older than the orginal’s modification date (sort of experimental - please report errors or simply comment it out)
+- added alpha channel support for PNGs and GIFs (no sharpening there because it creates ugly borders)
+- parameters 'w' and 'h' - if both set - define a 'box' into which the thumbnail fits; the output of distorted images is no longer possible
+- substituted an underscore with an 'x' in the thumbnail filename for better readability, e.g. 'example_160x257.png' instead of 'example_160_257.png'
 - better error handling
 - cleaned up the code, improved comments
 
 ##0.5.7
+
 - better log function
 - USE_STREAM_CONNECTION option
 - new 'sq' parameter to produce square thumbnails
 - new optional 'sharpen' parameter allows to switch off sharpening for individual thumbnails (default is 'true')
 
-## To do:
-- cache purging
+##To do
+
 - implement / finalize proper error handling
-- auto detect presence of an alpha channel in the image
-- Nice to have (maybe)
+- cache purging through GET parameter
+- define JPEG output quality parameter through GET parameter
+- auto detect presence of an alpha channel in the original image
+
+- nice to have (maybe)
 	- 'hot linking' of original files (through CURL or so)
+	- cropping (?)
